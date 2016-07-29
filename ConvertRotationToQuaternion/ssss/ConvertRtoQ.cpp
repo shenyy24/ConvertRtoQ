@@ -6,18 +6,20 @@ using namespace std;
 
 
 #define m 1461  //行数
-#define n 16  //列数
 
 void main()
 {
-	double R[m][n];    //定义数组，用来存放旋转矩阵 Rotation Matrix
-	double Q[m][4];    //定义数组，用来存放四元数   Quaternion
-	double E[m][3];    //定义数组，用来存放欧拉角   Euler Angles
+	double R[m][16];    //定义数组，用来存放旋转矩阵 Rotation Matrix
+	double Q[m][4];     //定义数组，用来存放四元数   Quaternion
+	double E[m][3];     //定义数组，用来存放欧拉角   Euler Angles
+
+	double T[m][16] ={0};
+	//double D[m][16] ={0};
 
 	ifstream ifile("1.txt");   //打开文件
 	for(int i=0;i<m;i++)
 	{
-		for(int j=0;j<n;j++)
+		for(int j=0;j<16;j++)
 		{
 			ifile>>R[i][j];   //将txt文件里数据读到数组a[][]
 		}
@@ -27,9 +29,8 @@ void main()
 	{
 		double tr, s;
 
-		// 计算矩阵轨迹
-		tr =1.0 + R[hh][0] + R[hh][5] + R[hh][10];
-		// 检查矩阵轨迹是正还是负
+		//将旋转矩阵转化为四元数
+		tr =1.0 + R[hh][0] + R[hh][5] + R[hh][10];   // 计算矩阵的迹
 		if(tr>0.0)
 		{
 			s = sqrt(tr)*2.0;
@@ -63,6 +64,7 @@ void main()
 			Q[hh][3] = (R[hh][4] - R[hh][1]) / s;   //w
 		}
 
+		//将四元数转化为欧拉角
 		const double r2d = 57.29577951308;
 		double x = Q[hh][0];
 		double y = Q[hh][1];
@@ -70,12 +72,24 @@ void main()
 		double w = Q[hh][3];
 		double r11 = 2 * (x*y + w*z);
 		double r12 = w*w + x*x - y*y - z*z;
-		double r21 = -2 * (x*z - w*y);
+		double r21 = 2 * (w*y - x*z);
 		double r31 = 2 * (y*z + w*x);
 		double r32 = w*w - x*x - y*y + z*z;
-		E[hh][2] = (double)atan2(r11, r12) * r2d;
-		E[hh][1] = (double)asin(r21) * r2d;
-		E[hh][0] = (double)atan2(r31, r32) * r2d;
+				
+		E[hh][0] = (double)atan2(r31, r32) * r2d;   //Yaw
+		E[hh][1] = (double)asin(r21) * r2d;         //Pitch
+		E[hh][2] = (double)atan2(r11, r12) * r2d;   //Roll
+
+		//将四元数转化为旋转矩阵
+		//T[hh][0]= (1-2*(y*y+z*z));
+		//T[hh][1]= 2 * (x*y - w*z);
+		//T[hh][2]= 2 * (x*z + w*y);
+		//T[hh][4]= 2 * (x*y + w*z);
+		//T[hh][5]= (1-2*(x*x+z*z));
+		//T[hh][6]= 2 * (z*y - w*x);
+		//T[hh][8]= 2 * (x*z - w*y);
+		//T[hh][9]= 2 * (z*y + w*x);
+		//T[hh][10]=(1-2*(x*x+y*y));
 	}
 
   
